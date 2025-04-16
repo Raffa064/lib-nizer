@@ -1,14 +1,12 @@
 #pragma once
 
 #include <ast.h>
-#include <consume.h>
-#include <functional>
+#include <consumer.h>
+#include <parser.h>
 #include <string>
 #include <sym.h>
 #include <token.h>
 #include <vector>
-
-typedef std::function<AST *(Consume &)> ParserRule;
 
 class Nizer {
 public:

@@ -1,28 +1,28 @@
-#include <consume.h>
+#include <consumer.h>
 #include <string>
 #include <vector>
 
-int Consume::left() { return tokens.size() - index; }
+int Consumer::left() { return tokens.size() - index; }
 
-bool Consume::has() { return left() > 0; }
+bool Consumer::has() { return left() > 0; }
 
-Token Consume::get(int i) { return tokens[index + i]; }
+Token Consumer::get(int i) { return tokens[index + i]; }
 
-bool Consume::current(SymMatch match) {
+bool Consumer::current(SymMatch match) {
   if (has())
     return match(get(0));
 
   return false;
 }
 
-bool Consume::next(SymMatch match) {
+bool Consumer::next(SymMatch match) {
   if (left() > 1)
     return match(get(1));
 
   return false;
 }
 
-bool Consume::expect(std::vector<Token *> out, std::vector<SymMatch> syms) {
+bool Consumer::expect(std::vector<Token *> out, std::vector<SymMatch> syms) {
   if (syms.size() > left())
     return false;
 
@@ -41,7 +41,9 @@ bool Consume::expect(std::vector<Token *> out, std::vector<SymMatch> syms) {
   return true;
 }
 
-bool Consume::consume(std::vector<Token *> out, std::vector<SymMatch> syms) {
+bool Consumer::expect(std::vector<SymMatch> syms) { return expect({}, syms); }
+
+bool Consumer::consume(std::vector<Token *> out, std::vector<SymMatch> syms) {
   bool as_expected = expect(out, syms);
 
   if (as_expected)
@@ -50,16 +52,16 @@ bool Consume::consume(std::vector<Token *> out, std::vector<SymMatch> syms) {
   return as_expected;
 }
 
-Token Consume::consume_any() {
+Token Consumer::consume_any() {
   Token curr = get(0);
   index++;
 
   return curr;
 }
 
-void Consume::skip() { index++; }
+void Consumer::skip() { index++; }
 
-int Consume::find_next(int index, SymMatch sym) {
+int Consumer::find_next(int index, SymMatch sym) {
   for (int i = index; i < tokens.size(); i++) {
     if (sym(tokens[i]))
       return i;
@@ -68,9 +70,9 @@ int Consume::find_next(int index, SymMatch sym) {
   return -1;
 }
 
-int Consume::find_next(SymMatch sym) { return find_next(index, sym); }
+int Consumer::find_next(SymMatch sym) { return find_next(index, sym); }
 
-bool Consume::wrap_to(Consume &out, SymMatch end) {
+bool Consumer::wrap_to(Consumer &out, SymMatch end) {
   int i = index;
   int j = find_next(i, end);
 
@@ -80,21 +82,21 @@ bool Consume::wrap_to(Consume &out, SymMatch end) {
   std::vector<Token> tks =
       std::vector<Token>(tokens.begin() + i, tokens.begin() + j);
 
-  out = Consume(source, tks);
+  out = Consumer(source, tks);
 
   index = j + 1;
 
   return true;
 }
 
-bool Consume::wrap(Consume &out, SymMatch start, SymMatch end) {
+bool Consumer::wrap(Consumer &out, SymMatch start, SymMatch end) {
   if (consume({}, {start}))
     return wrap_to(out, end);
 
   return false;
 }
 
-std::string Consume::at() {
+std::string Consumer::at() {
   if (tokens.empty())
     return "at 0";
 

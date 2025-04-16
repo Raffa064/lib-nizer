@@ -1,16 +1,23 @@
 #pragma once
 
-#include <vector>
+#include <any>
+#include <map>
 
 class AST {
 public:
-  virtual std::vector<AST *> nodes() = 0;
+  std::map<std::string, std::any> entries;
 
-  virtual std::string to_string() = 0;
+  std::string rule();
+
+  std::vector<AST *> *nodes();
+
+  void add(AST *node);
+
+  AST(std::string rule, std::vector<AST *> nodes = {});
+
+  std::any &operator[](std::string key);
 };
 
-class ASTLeaf : public AST {
-  std::vector<AST *> nodes() override { return {}; }
-};
+std::string ast_to_json(AST *ast);
 
-void print_ast(AST *);
+std::string ast_to_string(AST *ast);

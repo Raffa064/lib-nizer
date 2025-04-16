@@ -44,7 +44,7 @@ std::vector<Token> Nizer::tokenize(std::string &source) {
 AST *Nizer::parse(std::string source) {
   std::vector<Token> tokens = tokenize(source);
 
-  Consume consume(source, tokens);
+  Consumer consume(source, tokens);
 
   return startRule(consume);
 }

@@ -19,9 +19,10 @@ struct SymMatch {
 
   bool operator()(Token);
 
-  SymMatch &operator!() {
-    excluded = true;
-    return *this;
+  SymMatch operator!() {
+    SymMatch copy = *this;
+    copy.excluded = true;
+    return copy;
   }
 };
 

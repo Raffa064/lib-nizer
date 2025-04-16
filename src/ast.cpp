@@ -44,6 +44,9 @@ std::string any_to_json(std::any value) {
   if (value.type() == typeid(std::string))
     return quote(any_cast<std::string>(value));
 
+  if (value.type() == typeid(const char *))
+    return quote(std::string(any_cast<const char *>(value)));
+
 #define SIMPLE_CAST(_type)                                                     \
   if (value.type() == typeid(_type))                                           \
     return std::to_string(any_cast<_type>(value));

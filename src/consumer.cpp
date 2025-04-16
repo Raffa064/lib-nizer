@@ -1,4 +1,5 @@
 #include <consumer.h>
+#include <math.h>
 #include <string>
 #include <vector>
 
@@ -20,7 +21,7 @@ bool Consumer::expect(std::vector<Token *> out, std::vector<SymMatch> syms) {
       return false;
 
     if (!syms[i].excluded) {
-      if (i < out.size()) {
+      if (j < out.size()) {
         Token &token = *out[j];
         token = current;
       }
@@ -105,17 +106,35 @@ bool Consumer::wrap(Consumer &out, SymMatch start, SymMatch end) {
   return false;
 }
 
+void line_count(std::string &input, int index, int &rows, int &cols) {
+  cols = index - fmax(0, input.find_last_of("\n", index));
+
+  rows = 1;
+  while (true) {
+    index = input.find_last_of("\n", index - 1);
+
+    if (index == std::string::npos)
+      break;
+
+    rows++;
+  }
+}
+
 std::string Consumer::at() {
   if (tokens.empty())
-    return "at 0";
+    return "0:0";
 
   Token currentToken = get(0);
 
-  int start = currentToken.index;
-  int end = std::min<int>(start + 20, source.size());
+  int index = currentToken.index;
+  int start = source.find_last_of("\n", index);
+  int end = std::min<int>(source.find("\n", index), source.size());
+
+  int rows, cols;
+  line_count(source, index, rows, cols);
 
   std::string code = std::string(source.begin() + start, source.begin() + end);
   code.erase(std::remove(code.begin(), code.end(), '\n'), code.end());
 
-  return "at #" + std::to_string(start) + " '" + code + "'";
+  return std::to_string(rows) + ":" + std::to_string(cols) + " '" + code + "'";
 }

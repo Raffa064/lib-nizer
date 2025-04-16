@@ -8,6 +8,32 @@ bool Consumer::has() { return left() > 0; }
 
 Token Consumer::get(int i) { return tokens[index + i]; }
 
+bool Consumer::expect(std::vector<Token *> out, std::vector<SymMatch> syms) {
+  if (syms.size() > left())
+    return false;
+
+  int j = 0;
+  for (int i = 0; i < syms.size(); i++) {
+    Token current = tokens[index + i];
+
+    if (!syms[i](current))
+      return false;
+
+    if (!syms[i].excluded) {
+      if (i < out.size()) {
+        Token &token = *out[j];
+        token = current;
+      }
+
+      j++;
+    }
+  }
+
+  return true;
+}
+
+bool Consumer::expect(std::vector<SymMatch> syms) { return expect({}, syms); }
+
 bool Consumer::current(SymMatch match) {
   if (has())
     return match(get(0));
@@ -22,27 +48,6 @@ bool Consumer::next(SymMatch match) {
   return false;
 }
 
-bool Consumer::expect(std::vector<Token *> out, std::vector<SymMatch> syms) {
-  if (syms.size() > left())
-    return false;
-
-  for (int i = 0; i < syms.size(); i++) {
-    Token current = tokens[index + i];
-
-    if (!syms[i](current))
-      return false;
-
-    if (i < out.size()) {
-      Token &token = *out[i];
-      token = current;
-    }
-  }
-
-  return true;
-}
-
-bool Consumer::expect(std::vector<SymMatch> syms) { return expect({}, syms); }
-
 bool Consumer::consume(std::vector<Token *> out, std::vector<SymMatch> syms) {
   bool as_expected = expect(out, syms);
 
@@ -51,6 +56,10 @@ bool Consumer::consume(std::vector<Token *> out, std::vector<SymMatch> syms) {
 
   return as_expected;
 }
+
+bool Consumer::consume(std::vector<SymMatch> syms) { return consume({}, syms); }
+
+bool Consumer::consume_sym(SymMatch sym) { return consume({}, {sym}); }
 
 Token Consumer::consume_any() {
   Token curr = get(0);
@@ -100,11 +109,13 @@ std::string Consumer::at() {
   if (tokens.empty())
     return "at 0";
 
-  Token current = get(0);
+  Token currentToken = get(0);
 
-  int start = current.index;
+  int start = currentToken.index;
   int end = std::min<int>(start + 20, source.size());
 
-  return "at #" + std::to_string(start) + " '" +
-         std::string(source.begin() + start, source.begin() + end) + "'";
+  std::string code = std::string(source.begin() + start, source.begin() + end);
+  code.erase(std::remove(code.begin(), code.end(), '\n'), code.end());
+
+  return "at #" + std::to_string(start) + " '" + code + "'";
 }

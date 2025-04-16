@@ -13,10 +13,16 @@ enum SymFlags : int {
 struct SymMatch {
   int typeId;
   std::string match;
+  bool excluded = false; // Exclude from output
 
   SymMatch(int typeId, std::string match) : typeId(typeId), match(match) {}
 
   bool operator()(Token);
+
+  SymMatch &operator!() {
+    excluded = true;
+    return *this;
+  }
 };
 
 struct Symbol {

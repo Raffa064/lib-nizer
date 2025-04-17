@@ -1,5 +1,5 @@
-#include <ast.h>
-#include <consumer.h>
+#include <ast.hpp>
+#include <consumer.hpp>
 #include <functional>
 
 typedef std::function<AST *(Consumer &)> ParserRule;

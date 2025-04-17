@@ -1,20 +1,11 @@
 #include <any>
-#include <ast.h>
+#include <ast.hpp>
 #include <sstream>
 #include <string>
 
 std::string AST::rule() { return std::any_cast<std::string>(entries["rule"]); }
 
-std::vector<AST *> *AST::nodes() {
-  return std::any_cast<std::vector<AST *> *>(entries["nodes"]);
-}
-
-void AST::add(AST *node) { nodes()->push_back(node); }
-
-AST::AST(std::string rule, std::vector<AST *> nodes) {
-  entries["rule"] = rule;
-  entries["nodes"] = new std::vector<AST *>(nodes);
-}
+AST::AST(std::string rule) { entries["rule"] = rule; }
 
 std::any &AST::operator[](std::string key) { return entries[key]; }
 
@@ -85,10 +76,11 @@ std::string ast_to_json(AST *ast) {
   return ast_to_json(ast, buffer);
 }
 
+/*
 std::string ast_to_string(AST *ast, std::stringstream &buffer) {
   buffer << "(" << ast->rule();
 
-  auto nodes = ast->nodes();
+  aut
   for (AST *node : *nodes)
     buffer << " " << ast_to_string(node);
 
@@ -101,3 +93,4 @@ std::string ast_to_string(AST *ast) {
   std::stringstream buffer;
   return ast_to_string(ast, buffer);
 }
+*/

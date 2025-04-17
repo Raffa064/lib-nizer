@@ -1,4 +1,4 @@
-#include <nizer.h>
+#include <nizer.hpp>
 #include <regex>
 #include <stdexcept>
 #include <vector>

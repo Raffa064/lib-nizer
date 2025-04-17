@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string>
-#include <sym.h>
-#include <token.h>
+#include <sym.hpp>
+#include <token.hpp>
 #include <vector>
 
 class Consumer {

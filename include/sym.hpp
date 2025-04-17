@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <token.h>
+#include <token.hpp>
 #include <vector>
 
 enum SymFlags : int {

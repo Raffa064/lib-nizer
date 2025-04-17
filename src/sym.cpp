@@ -1,5 +1,5 @@
 #include <regex>
-#include <sym.h>
+#include <sym.hpp>
 
 bool SymMatch::operator()(Token current) {
   if (typeId != current.typeId) {

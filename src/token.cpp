@@ -1,5 +1,5 @@
 #include <iostream>
-#include <token.h>
+#include <token.hpp>
 #include <vector>
 
 void print_tokens(std::vector<Token> &tokens) {

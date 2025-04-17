@@ -1,11 +1,11 @@
 #pragma once
 
-#include <ast.h>
-#include <consumer.h>
-#include <parser.h>
+#include <ast.hpp>
+#include <consumer.hpp>
+#include <parser.hpp>
 #include <string>
-#include <sym.h>
-#include <token.h>
+#include <sym.hpp>
+#include <token.hpp>
 #include <vector>
 
 class Nizer {

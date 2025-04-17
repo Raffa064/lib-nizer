@@ -76,13 +76,20 @@ std::string ast_to_json(AST *ast) {
   return ast_to_json(ast, buffer);
 }
 
-/*
 std::string ast_to_string(AST *ast, std::stringstream &buffer) {
   buffer << "(" << ast->rule();
 
-  aut
-  for (AST *node : *nodes)
-    buffer << " " << ast_to_string(node);
+  for (auto &[key, value] : ast->entries) {
+    if (value.type() == typeid(ast_vector *)) {
+      ast_vector &nodes = *any_cast<ast_vector *>(value);
+
+      buffer << " [" << key;
+      for (auto node : nodes)
+        buffer << " " << ast_to_string(node);
+
+      buffer << "]";
+    }
+  }
 
   buffer << ")";
 
@@ -93,4 +100,3 @@ std::string ast_to_string(AST *ast) {
   std::stringstream buffer;
   return ast_to_string(ast, buffer);
 }
-*/

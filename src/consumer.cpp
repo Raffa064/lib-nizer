@@ -1,3 +1,4 @@
+#include "token.hpp"
 #include <consumer.hpp>
 #include <math.h>
 #include <string>
@@ -106,35 +107,48 @@ bool Consumer::wrap(Consumer &out, SymMatch start, SymMatch end) {
   return false;
 }
 
-void line_count(std::string &input, int index, int &rows, int &cols) {
-  cols = index - fmax(0, input.find_last_of("\n", index));
+void line_count(std::string &input, int index, int &row, int &col) {
+  col = input.find_last_of("\n", index);
 
-  rows = 1;
+  if (col == std::string::npos)
+    col = 0;
+  else
+    col = index - col;
+
+  row = 1;
   while (true) {
     index = input.find_last_of("\n", index - 1);
 
     if (index == std::string::npos)
       break;
 
-    rows++;
+    row++;
   }
 }
 
-std::string Consumer::at() {
-  if (tokens.empty())
-    return "0:0";
-
-  Token currentToken = get(0);
-
-  int index = currentToken.index;
+std::string Consumer::at(Token token) {
+  int index = token.index;
   int start = source.find_last_of("\n", index);
   int end = std::min<int>(source.find("\n", index), source.size());
 
-  int rows, cols;
-  line_count(source, index, rows, cols);
+  int row, col;
+  line_count(source, index, row, col);
 
   std::string code = std::string(source.begin() + start, source.begin() + end);
   code.erase(std::remove(code.begin(), code.end(), '\n'), code.end());
 
-  return std::to_string(rows) + ":" + std::to_string(cols) + " '" + code + "'";
+  return std::to_string(row) + ":" + std::to_string(col) + " '" + code + "'";
+}
+
+std::string Consumer::at() {
+  if (!has())
+    return "EOF"; // reached enf of file (or end of line)
+
+  Token currentToken = get(0);
+  return at(currentToken);
+}
+
+void Consumer::debug() {
+  std::vector<Token> tks(tokens.begin() + index, tokens.end());
+  print_tokens(tks);
 }

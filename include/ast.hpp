@@ -10,7 +10,6 @@ public:
 
   std::string rule();
 
-
   void add(AST *node);
 
   AST(std::string rule);
@@ -18,8 +17,8 @@ public:
   std::any &operator[](std::string key);
 };
 
-using ast_vector = std::vector<AST*>;
+using ast_vector = std::vector<AST *>;
 
 std::string ast_to_json(AST *ast);
 
-//std::string ast_to_string(AST *ast);
+std::string ast_to_string(AST *ast);

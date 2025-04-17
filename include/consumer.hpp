@@ -73,8 +73,14 @@ public:
    */
   bool wrap(Consumer &, SymMatch, SymMatch);
 
+  // Return a string with location of the given token in the source
+  std::string at(Token);
+
   // Returns a string with the location of the current token in the source
   std::string at();
+
+  // Display current tokens
+  void debug();
 
   Consumer(std::string source, std::vector<Token> tokens)
       : source(source), tokens(tokens), index(0) {};

@@ -53,7 +53,7 @@ std::string any_to_json(std::any value) {
   return "<unprintable-type>";
 }
 
-std::string ast_to_json(AST *ast, std::stringstream &buffer) {
+void ast_to_json(AST *ast, std::stringstream &buffer) {
   buffer << "{";
 
   bool first = true;
@@ -67,17 +67,22 @@ std::string ast_to_json(AST *ast, std::stringstream &buffer) {
   }
 
   buffer << "}";
-
-  return buffer.str();
 }
 
 std::string ast_to_json(AST *ast) {
   std::stringstream buffer;
-  return ast_to_json(ast, buffer);
+  ast_to_json(ast, buffer);
+
+  return buffer.str();
 }
 
-std::string ast_to_string(AST *ast, std::stringstream &buffer) {
-  buffer << "(" << ast->rule();
+void ast_to_string(AST *ast, std::stringstream &buffer,
+                   std::string label = "") {
+
+  if (!label.empty())
+    label += ":";
+
+  buffer << " (" << label << ast->rule();
 
   for (auto &[key, value] : ast->entries) {
     if (value.type() == typeid(ast_vector *)) {
@@ -85,18 +90,23 @@ std::string ast_to_string(AST *ast, std::stringstream &buffer) {
 
       buffer << " [" << key;
       for (auto node : nodes)
-        buffer << " " << ast_to_string(node);
+        ast_to_string(node, buffer);
 
       buffer << "]";
+    }
+
+    if (value.type() == typeid(AST *)) {
+      AST *node = std::any_cast<AST *>(value);
+      ast_to_string(node, buffer, key);
     }
   }
 
   buffer << ")";
-
-  return buffer.str();
 }
 
 std::string ast_to_string(AST *ast) {
   std::stringstream buffer;
-  return ast_to_string(ast, buffer);
+  ast_to_string(ast, buffer);
+
+  return buffer.str();
 }

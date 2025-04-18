@@ -5,15 +5,32 @@
 
 std::string AST::rule() { return std::any_cast<std::string>(entries["rule"]); }
 
-AST::AST(std::string rule) { entries["rule"] = rule; }
+AST::AST(std::string rule, entry_map _entries) {
+  entries = _entries;
+  entries["rule"] = rule;
+}
+
+AST::~AST() {
+  for (auto &[key, value] : entries) {
+    if (value.type() == typeid(AST *))
+      delete std::any_cast<AST *>(value);
+
+    if (value.type() == typeid(ast_vector)) {
+      ast_vector nodes = std::any_cast<ast_vector>(value);
+
+      for (auto n : nodes)
+        delete n;
+    }
+  }
+}
 
 std::any &AST::operator[](std::string key) { return entries[key]; }
 
 std::string quote(std::string str) { return "\"" + str + "\""; }
 
 std::string any_to_json(std::any value) {
-  if (value.type() == typeid(std::vector<AST *> *)) {
-    auto nodes = *std::any_cast<std::vector<AST *> *>(value);
+  if (value.type() == typeid(ast_vector)) {
+    auto nodes = std::any_cast<ast_vector>(value);
 
     std::stringstream buffer;
     buffer << "[";
@@ -85,8 +102,8 @@ void ast_to_string(AST *ast, std::stringstream &buffer,
   buffer << " (" << label << ast->rule();
 
   for (auto &[key, value] : ast->entries) {
-    if (value.type() == typeid(ast_vector *)) {
-      ast_vector &nodes = *any_cast<ast_vector *>(value);
+    if (value.type() == typeid(ast_vector)) {
+      ast_vector nodes = any_cast<ast_vector>(value);
 
       buffer << " [" << key;
       for (auto node : nodes)

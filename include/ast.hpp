@@ -6,15 +6,17 @@
 
 class AST {
 public:
-  std::map<std::string, std::any> entries;
+  using entry_map = std::map<std::string, std::any>;
+
+  entry_map entries;
 
   std::string rule();
 
-  void add(AST *node);
-
-  AST(std::string rule);
+  AST(std::string rule, entry_map entries = {});
 
   std::any &operator[](std::string key);
+
+  ~AST();
 };
 
 using ast_vector = std::vector<AST *>;

@@ -8,4 +8,6 @@ struct Token {
   int index;
 };
 
-void print_tokens(std::vector<Token> &);
+using token_vector = std::vector<Token>;
+
+void print_tokens(token_vector &);

@@ -3,8 +3,8 @@
 #include <stdexcept>
 #include <vector>
 
-std::vector<Token> Nizer::tokenize(std::string &source) {
-  std::vector<Token> tokens;
+token_vector Nizer::tokenize(std::string &source) {
+  token_vector tokens;
 
   int i = 0;
   while (i < source.length()) {
@@ -42,7 +42,7 @@ std::vector<Token> Nizer::tokenize(std::string &source) {
 }
 
 AST *Nizer::parse(std::string source) {
-  std::vector<Token> tokens = tokenize(source);
+  token_vector tokens = tokenize(source);
 
   Consumer consume(source, tokens);
 

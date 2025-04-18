@@ -1,7 +1,7 @@
 #pragma once
 
+#include <nizer.hpp>
 #include <string>
-#include <token.hpp>
 #include <vector>
 
 enum SymFlags : int {

@@ -1,8 +1,7 @@
 #include <iostream>
-#include <token.hpp>
-#include <vector>
+#include <nizer.hpp>
 
-void print_tokens(std::vector<Token> &tokens) {
+void print_tokens(token_vector &tokens) {
   for (Token t : tokens) {
     std::cout << t.typeId << ":" << t.value << ", ";
   }

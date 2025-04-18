@@ -1,19 +1,22 @@
 #pragma once
 
-#include <ast.hpp>
-#include <consumer.hpp>
-#include <parser.hpp>
+#include <nizer/ast.hpp>
+#include <nizer/token.hpp>
+
+#include <nizer/sym.hpp>
+
+#include <nizer/consumer.hpp>
+#include <nizer/err.hpp>
+#include <nizer/parser.hpp>
+
 #include <string>
-#include <sym.hpp>
-#include <token.hpp>
-#include <vector>
 
 class Nizer {
 public:
   SymbolList &symbols;
   ParserRule startRule;
 
-  std::vector<Token> tokenize(std::string &);
+  token_vector tokenize(std::string &);
   AST *parse(std::string);
 
   Nizer(SymbolList &symbols, ParserRule startRule)

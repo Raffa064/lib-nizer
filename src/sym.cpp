@@ -1,5 +1,5 @@
+#include <nizer.hpp>
 #include <regex>
-#include <sym.hpp>
 
 bool SymMatch::operator()(Token current) {
   if (typeId != current.typeId) {

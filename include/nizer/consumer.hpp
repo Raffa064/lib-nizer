@@ -1,13 +1,12 @@
 #pragma once
 
+#include <nizer.hpp>
 #include <string>
-#include <sym.hpp>
-#include <token.hpp>
 #include <vector>
 
 class Consumer {
   std::string source;
-  std::vector<Token> tokens;
+  token_vector tokens;
   int index;
 
 public:
@@ -82,7 +81,7 @@ public:
   // Display current tokens
   void debug();
 
-  Consumer(std::string source, std::vector<Token> tokens)
+  Consumer(std::string source, token_vector tokens)
       : source(source), tokens(tokens), index(0) {};
 
   Consumer() : Consumer("", {}) {}

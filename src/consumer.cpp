@@ -1,5 +1,7 @@
 #include <math.h>
-#include <nizer.hpp>
+#include <nizer/consumer.hpp>
+#include <nizer/sym.hpp>
+#include <nizer/token.hpp>
 #include <string>
 #include <vector>
 

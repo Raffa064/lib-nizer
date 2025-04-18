@@ -1,5 +1,8 @@
+#pragma once
+
 #include <functional>
-#include <nizer.hpp>
+#include <nizer/ast.hpp>
+#include <nizer/consumer.hpp>
 
 typedef std::function<AST *(Consumer &)> ParserRule;
 

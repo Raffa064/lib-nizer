@@ -1,5 +1,5 @@
 #include <iostream>
-#include <nizer.hpp>
+#include <nizer/token.hpp>
 
 void print_tokens(token_vector &tokens) {
   for (Token t : tokens) {

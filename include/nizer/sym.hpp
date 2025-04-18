@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nizer.hpp>
+#include <nizer/token.hpp>
 #include <string>
 #include <vector>
 

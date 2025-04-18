@@ -1,9 +1,5 @@
-#include "ast.hpp"
-#include "consumer.hpp"
-#include "err.hpp"
-#include "nizer.hpp"
-#include "sym.hpp"
 #include <iostream>
+#include <nizer.hpp>
 #include <ostream>
 #include <string>
 
@@ -13,9 +9,7 @@ Symbol NUM = symbols("[0-9]+", REGULAR);      // Números inteiros
 Symbol OP = symbols("[\\+\\-\\*/]", REGULAR); // Operadores + - * /
 Symbol WS = symbols(NizerSymbols::WS);        // Espaços em branco ignorados
 
-AST *parseFactor(Consumer &consumer);
-
-AST(*parseFactor(Consumer &consumer)) {
+parser_rule(parseFactor) {
   Token num;
   if (consumer.consume({&num}, {NUM})) {
     AST &node = *new AST("factor");
@@ -27,7 +21,7 @@ AST(*parseFactor(Consumer &consumer)) {
 }
 
 // Multiplicação e divisão
-AST *parseTerm(Consumer &consumer) {
+parser_rule(parseTerm) {
   AST *left = parseFactor(consumer);
 
   Token op;
@@ -46,7 +40,7 @@ AST *parseTerm(Consumer &consumer) {
 }
 
 // Soma e subtração
-AST *parseMath(Consumer &consumer) {
+parser_rule(parseMath) {
   AST *left = parseTerm(consumer);
 
   Token op;
@@ -64,8 +58,11 @@ AST *parseMath(Consumer &consumer) {
   return left;
 }
 
+// transformer(optmizer) { return && }
+
 int main() {
   Nizer nizer(symbols, parseMath);
+  // nizer.add_transformer(optimizer);
 
   AST *tree = nizer.parse("10 + 2 * 3 - 4");
 

@@ -1,7 +1,9 @@
-#include <nizer.hpp>
+#include <nizer/ast.hpp>
+#include <nizer/consumer.hpp>
+#include <nizer/nizer.hpp>
+#include <nizer/token.hpp>
 #include <regex>
 #include <stdexcept>
-#include <vector>
 
 token_vector Nizer::tokenize(std::string &source) {
   token_vector tokens;

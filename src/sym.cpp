@@ -1,4 +1,5 @@
-#include <nizer.hpp>
+#include <nizer/sym.hpp>
+#include <nizer/token.hpp>
 #include <regex>
 
 bool SymMatch::operator()(Token current) {

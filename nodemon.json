@@ -1,0 +1,12 @@
+{
+  "watch": [
+    "."
+  ],
+  "ignore": [
+    "**/.cmake/**",
+    "**/build/**",
+    "**/CMakeFiles/**"
+  ],
+  "ext": "cpp,hpp,sh,txt,ez",
+  "exec": "./build-test.sh"
+}

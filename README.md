@@ -4,7 +4,9 @@ A **tokenization and recursive descent parser (RDP)** library. It makes it easie
 
 ## Creating a Basic Parser
 
-In this example, we’ll implement a simple mathematical expression parser.
+In the above examples, we’ll implement a simple mathematical expression **parser**. 
+
+You can see fully implemented code (with evaluation) [here](./test/main.cpp).
 
 ### Symbols
 
@@ -39,7 +41,13 @@ Now that we’ve defined our tokens, we need to describe how they form valid exp
 A parser rule is a function that takes a stream of tokens and builds a tree structure called an **AST (Abstract Syntax Tree)**. It follows this signature:
 
 ```cpp
-AST* parseSomething(Consumer& consumer);
+AST* parseSomething(Nizer&, Consumer& consumer) { ... }
+```
+
+There's a macro for creating a parser rule, that makes it simpler, and allows to use some cool Nizer features:
+
+```cpp
+parser_rule(parseSomething) { ... }
 ```
 
 These functions are the heart of a **recursive descent parser**. The "descendant" part will make more sense shortly.
@@ -72,7 +80,7 @@ The deeper we go, the more abstract and simplified the structure becomes—that�
 Here’s how we implement it:
 
 ```cpp
-AST* parseFactor(Consumer& consumer) {
+AST* parseFactor(Nizer&, Consumer& consumer) {
   Token num;
 
   if (consumer.consume({&num}, {NUM})) {
@@ -89,7 +97,7 @@ AST* parseFactor(Consumer& consumer) {
 
 ```cpp
 // term = factor [('*' | '/') factor]*
-AST* parseTerm(Consumer& consumer) {
+AST* parseTerm(Nizer&, Consumer& consumer) {
   AST* left = parseFactor(consumer);
 
   Token op;
@@ -112,7 +120,7 @@ AST* parseTerm(Consumer& consumer) {
 
 ```cpp
 // expression = term [('+' | '-') term]*
-AST* parseExpression(Consumer& consumer) {
+AST* parseExpression(Nizer&, Consumer& consumer) {
   AST* left = parseTerm(consumer);
 
   Token op;

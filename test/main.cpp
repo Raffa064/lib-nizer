@@ -1,6 +1,7 @@
 #include <iostream>
 #include <nizer.hpp>
 #include <ostream>
+#include <regex>
 #include <string>
 
 SymbolList symbols;
@@ -12,8 +13,7 @@ Symbol WS = symbols(NizerSymbols::WS);        // Espaços em branco ignorados
 parser_rule(parseFactor) {
   Token num;
   if (consumer.consume({&num}, {NUM})) {
-    AST &node = *new AST("factor");
-    node["value"] = std::stoi(num.value);
+    AST &node = *new AST("factor", {{"value", std::stoi(num.value)}});
     return &node;
   }
 
@@ -22,11 +22,11 @@ parser_rule(parseFactor) {
 
 // Multiplicação e divisão
 parser_rule(parseTerm) {
-  AST *left = parseFactor(consumer);
+  AST *left = parseFactor(nizer, consumer);
 
   Token op;
   while (consumer.consume({&op}, {OP("[\\*/]")})) {
-    AST *right = parseFactor(consumer);
+    AST *right = parseFactor(nizer, consumer);
 
     AST &node = *new AST("op");
     node["op"] = op.value;
@@ -41,11 +41,11 @@ parser_rule(parseTerm) {
 
 // Soma e subtração
 parser_rule(parseMath) {
-  AST *left = parseTerm(consumer);
+  AST *left = parseTerm(nizer, consumer);
 
   Token op;
   while (consumer.consume({&op}, {OP("[\\+\\-]")})) {
-    AST *right = parseTerm(consumer);
+    AST *right = parseTerm(nizer, consumer);
 
     AST &node = *new AST("op");
     node["op"] = op.value;
@@ -58,15 +58,46 @@ parser_rule(parseMath) {
   return left;
 }
 
-// transformer(optmizer) { return && }
+visitor(optimizer) {
+  visit("op") {
+    AST &left = *optimizer(node->get<AST *>("left"));
+    AST &right = *optimizer(node->get<AST *>("right"));
+
+    if (left.rule() != "factor" || right.rule() != "factor")
+      return node;
+
+    int lValue = left.get<int>("value");
+    int rValue = right.get<int>("value");
+
+    int result;
+    std::string op = node->get<std::string>("op");
+
+    if (op == "+")
+      result = lValue + rValue;
+    else if (op == "-")
+      result = lValue - rValue;
+    else if (op == "*")
+      result = lValue * rValue;
+    else
+      result = lValue / rValue;
+
+    node->reset("factor", {{"value", result}});
+  }
+
+  return node;
+}
 
 int main() {
   Nizer nizer(symbols, parseMath);
-  // nizer.add_transformer(optimizer);
+  nizer.add_visitor(optimizer);
 
-  AST *tree = nizer.parse("10 + 2 * 3 - 4");
+  std::string exp = "10 + 2 * 3 * 3 - 4 * 2";
+  AST *tree = nizer.parse(exp);
 
-  std::cout << ast_to_string(tree) << std::endl;
+  std::cout << exp << std::endl;
+  std::cout << "Result: " << tree->get<int>("value") << std::endl;
+
+  delete tree;
 
   return 0;
 }

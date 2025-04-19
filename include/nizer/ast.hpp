@@ -12,7 +12,15 @@ public:
 
   std::string rule();
 
-  AST(std::string rule, entry_map entries = {});
+  template <typename T> T get(std::string key) {
+    return std::any_cast<T>(entries[key]);
+  }
+
+  void reset(std::string rule, entry_map entries = {});
+
+  void destroyChildren();
+
+  AST(std::string rule, entry_map entries = {}) { reset(rule, entries); }
 
   std::any &operator[](std::string key);
 

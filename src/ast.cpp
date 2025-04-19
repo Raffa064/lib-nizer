@@ -5,12 +5,15 @@
 
 std::string AST::rule() { return std::any_cast<std::string>(entries["rule"]); }
 
-AST::AST(std::string rule, entry_map _entries) {
+void AST::reset(std::string rule, entry_map _entries) {
+  if (!entries.empty())
+    destroyChildren(); // destroy child nodes
+
   entries = _entries;
   entries["rule"] = rule;
 }
 
-AST::~AST() {
+void AST::destroyChildren() {
   for (auto &[key, value] : entries) {
     if (value.type() == typeid(AST *))
       delete std::any_cast<AST *>(value);
@@ -23,6 +26,8 @@ AST::~AST() {
     }
   }
 }
+
+AST::~AST() { destroyChildren(); }
 
 std::any &AST::operator[](std::string key) { return entries[key]; }
 

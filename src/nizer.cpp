@@ -1,9 +1,14 @@
+#include <iostream>
 #include <nizer/ast.hpp>
 #include <nizer/consumer.hpp>
 #include <nizer/nizer.hpp>
 #include <nizer/token.hpp>
+#include <nizer/visitor.hpp>
+#include <ostream>
 #include <regex>
 #include <stdexcept>
+
+void Nizer::add_visitor(Visitor visitor) { visitors.push_back(visitor); }
 
 token_vector Nizer::tokenize(std::string &source) {
   token_vector tokens;
@@ -43,10 +48,23 @@ token_vector Nizer::tokenize(std::string &source) {
   return tokens;
 }
 
+AST *Nizer::wrap(std::string ruleName, ParserRule rule, Consumer &consumer) {
+  if (logParser)
+    std::cout << ruleName << std::endl;
+
+  AST *node = rule(*this, consumer);
+
+  for (Visitor v : visitors) {
+    node = v(node);
+  }
+
+  return node;
+}
+
 AST *Nizer::parse(std::string source) {
   token_vector tokens = tokenize(source);
 
   Consumer consume(source, tokens);
 
-  return startRule(consume);
+  return startRule(*this, consume);
 }

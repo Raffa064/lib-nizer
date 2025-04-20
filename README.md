@@ -32,9 +32,9 @@ Let’s define symbols for:
 ```cpp
 SymbolList symbols;
 
-Symbol NUM = symbols("[0-9]+", REGULAR);       // Unsigned integers
-Symbol OP  = symbols("[\\+\\-\\*/]", REGULAR); // Math operators: + - * /
-Symbol WS  = symbols("[ \n\r\t]+", SKIP);      // Whitespace (ignored)
+Symbol NUM = symbols("[0-9]+", nz::REGULAR);       // Unsigned integers
+Symbol OP  = symbols("[\\+\\-\\*/]", nz::REGULAR); // Math operators: + - * /
+Symbol WS  = symbols("[ \n\r\t]+", nz::SKIP);      // Whitespace (ignored)
 ```
 
 > [!TIP]

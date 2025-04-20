@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+namespace nz {
+
 class Consumer {
   std::string source;
   token_vector tokens;
@@ -87,3 +89,5 @@ public:
 
   Consumer() : Consumer("", {}) {}
 };
+
+} // namespace nz

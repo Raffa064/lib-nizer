@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+namespace nz {
+
 int Consumer::left() { return tokens.size() - index; }
 
 bool Consumer::has() { return left() > 0; }
@@ -153,3 +155,5 @@ void Consumer::debug() {
   std::vector<Token> tks(tokens.begin() + index, tokens.end());
   print_tokens(tks);
 }
+
+} // namespace nz

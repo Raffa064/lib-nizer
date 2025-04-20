@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+namespace nz {
+
 enum SymFlags : int {
   REGULAR = 0,
   SKIP = 1,
@@ -56,10 +58,12 @@ public:
   Symbol operator()(Symbol sym) { return (*this)(sym.pattern, sym.flags); }
 };
 
-namespace NizerSymbols {
+namespace sym {
 const Symbol WS = Symbol("[ \n\r\t]+", MULTLINE | SKIP);
 const Symbol SHARP_COMMENT = Symbol("#[^\n\r]*", SKIP);
 const Symbol INLINE_COMMENT = Symbol("//.*", SKIP);
 const Symbol MULTLINE_COMMENT = Symbol("/\\*(.*)\\*/", SKIP | MULTLINE);
 const Symbol BASIC_ID = Symbol("[a-zA-Z$_][a-zA-Z$_0-9]*", REGULAR);
-} // namespace NizerSymbols
+} // namespace sym
+
+} // namespace nz

@@ -4,6 +4,8 @@
 #include <initializer_list>
 #include <string>
 
+namespace nz {
+
 using ils = std::initializer_list<std::any>;
 
 inline std::string any_to_string(const std::any &value) {
@@ -20,11 +22,11 @@ inline std::string any_to_string(const std::any &value) {
   return "<unprintable-type>";
 }
 
-class nizer_error {
+class error {
 public:
   std::string msg;
 
-  nizer_error(std::string msg, ils insertion = {}) {
+  error(std::string msg, ils insertion = {}) {
     int index = 0;
     for (auto ins : insertion) {
       index = msg.find("{}", index);
@@ -41,3 +43,5 @@ public:
   operator std::string() { return msg; }
   operator const char *() { return msg.c_str(); }
 };
+
+} // namespace nz

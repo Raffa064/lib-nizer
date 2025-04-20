@@ -1,14 +1,15 @@
+#include "nizer/ast.hpp"
+#include "nizer/err.hpp"
 #include <iostream>
-#include <nizer.hpp>
 #include <ostream>
-#include <regex>
 #include <string>
+#include <use-nizer.hpp>
 
 SymbolList symbols;
 
-Symbol NUM = symbols("[0-9]+", REGULAR);      // Números inteiros
-Symbol OP = symbols("[\\+\\-\\*/]", REGULAR); // Operadores + - * /
-Symbol WS = symbols(NizerSymbols::WS);        // Espaços em branco ignorados
+Symbol NUM = symbols("[0-9]+", nz::REGULAR);      // Números inteiros
+Symbol OP = symbols("[\\+\\-\\*/]", nz::REGULAR); // Operadores + - * /
+Symbol WS = symbols(nz::sym::WS);                 // Espaços em branco ignorados
 
 parser_rule(parseFactor) {
   Token num;
@@ -17,16 +18,16 @@ parser_rule(parseFactor) {
     return &node;
   }
 
-  throw nizer_error("Invalid token at {}", {consumer.at()});
+  throw nz::error("Invalid token at {}", {consumer.at()});
 }
 
 // Multiplicação e divisão
 parser_rule(parseTerm) {
-  AST *left = parseFactor(nizer, consumer);
+  AST *left = parseFactor(consumer);
 
   Token op;
   while (consumer.consume({&op}, {OP("[\\*/]")})) {
-    AST *right = parseFactor(nizer, consumer);
+    AST *right = parseFactor(consumer);
 
     AST &node = *new AST("op");
     node["op"] = op.value;
@@ -41,11 +42,11 @@ parser_rule(parseTerm) {
 
 // Soma e subtração
 parser_rule(parseMath) {
-  AST *left = parseTerm(nizer, consumer);
+  AST *left = parseTerm(consumer);
 
   Token op;
   while (consumer.consume({&op}, {OP("[\\+\\-]")})) {
-    AST *right = parseTerm(nizer, consumer);
+    AST *right = parseTerm(consumer);
 
     AST &node = *new AST("op");
     node["op"] = op.value;
@@ -58,46 +59,48 @@ parser_rule(parseMath) {
   return left;
 }
 
-visitor(optimizer) {
+int visitor(evaluator) {
   visit("op") {
-    AST &left = *optimizer(node->get<AST *>("left"));
-    AST &right = *optimizer(node->get<AST *>("right"));
-
-    if (left.rule() != "factor" || right.rule() != "factor")
-      return node;
-
-    int lValue = left.get<int>("value");
-    int rValue = right.get<int>("value");
+    int left = evaluator(node->get<AST *>("left"));
+    int right = evaluator(node->get<AST *>("right"));
 
     int result;
     std::string op = node->get<std::string>("op");
 
     if (op == "+")
-      result = lValue + rValue;
+      result = left + right;
     else if (op == "-")
-      result = lValue - rValue;
+      result = left - right;
     else if (op == "*")
-      result = lValue * rValue;
+      result = left * right;
     else
-      result = lValue / rValue;
+      result = left / right;
 
-    node->reset("factor", {{"value", result}});
+    return result;
   }
 
-  return node;
+  visit("factor") { return node->get<int>("value"); }
+
+  throw nz::error("Invalid node: {}", {nz::ast_to_string(node)});
 }
 
 int main() {
-  Nizer nizer(symbols, parseMath);
-  nizer.add_visitor(optimizer);
+  try {
+    std::string exp = "10 * 2 / 3 - 4";
 
-  std::string exp = "10 + 2 * 3 * 3 - 4 * 2";
-  AST *tree = nizer.parse(exp);
+    token_vector tokens = nz::tokenize(symbols, exp);
+    Consumer consumer(exp, tokens);
+    AST *tree = parseMath(consumer);
+    int value = evaluator(tree);
 
-  std::cout << exp << std::endl;
-  std::cout << "Result: " << tree->get<int>("value") << std::endl;
+    std::cout << nz::ast_to_string(tree) << std::endl;
+    std::cout << exp << " = " << value << std::endl;
 
-  delete tree;
+    delete tree;
 
-  return 0;
+    return 0;
+  } catch (nz::error err) {
+    std::cout << "Error:" << err.msg << std::endl;
+    return 1;
+  }
 }

@@ -2,6 +2,8 @@
 #include <nizer/token.hpp>
 #include <regex>
 
+namespace nz {
+
 bool SymMatch::operator()(Token current) {
   if (typeId != current.typeId) {
     return false;
@@ -21,3 +23,5 @@ bool Symbol::operator()(Token token) { return ((SymMatch)(*this))(token); }
 SymMatch Symbol::operator()(std::string match) {
   return SymMatch(typeId, match);
 }
+
+} // namespace nz

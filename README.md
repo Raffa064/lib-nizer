@@ -2,85 +2,77 @@
 
 A **tokenization and recursive descent parser (RDP)** library. It makes it easier to build custom language parsers by hand!
 
+---
+
 ## Creating a Basic Parser
 
-In the above examples, we’ll implement a simple mathematical expression **parser**. 
+We’ll walk through the implementation of a simple **mathematical expression parser**.
 
-You can see fully implemented code (with evaluation) [here](./test/main.cpp).
-
-### Symbols
-
-First, we need to define our grammar symbols. These symbols are labels that identify **meaningful words** in our language.
-
-A symbol consists of two main components: a regular expression pattern and a bit flag value. The flag is usually set to `REGULAR`, meaning it’s a normal token. Other options include `SKIP` (to ignore the token, useful for things like comments) and `MULTILINE` (used to match tokens that span multiple lines).
-
-For this parser, we’ll define three symbols: one for numbers, one for operators, and one special symbol for whitespace (usually called `WS`, short for *white space*).
-
-To define these symbols, we use a `SymbolList`, which behaves like a callable object to register new symbols:
-
-```cpp
-SymbolList symbols; // Our symbol list
-
-Symbol NUM = symbols("[0-9]+", REGULAR);    // Unsigned integers
-Symbol OP  = symbols("[\\+\\-\\*/]", REGULAR); // Math operators: + - * /
-Symbol WS  = symbols("[ \n\r\t]+", SKIP);   // Whitespace (skipped)
-```
-
-> [!TIP]
-> Since whitespace is common in most languages, you can use the built-in `NizerSymbols::WS`:
-> ```cpp 
-> Symbol WS = symbols(NizerSymbols::WS);
-> ```
-
-Now that we’ve defined our tokens, we need to describe how they form valid expressions.
+You can find a full example with **evaluation** [here](./test/main.cpp).
 
 ---
 
-### Parsing Rules
+## Defining Symbols
 
-A parser rule is a function that takes a stream of tokens and builds a tree structure called an **AST (Abstract Syntax Tree)**. It follows this signature:
+Before parsing, we need to define the **symbols** (tokens) of our language.  
+Each symbol consists of:
 
-```cpp
-AST* parseSomething(Nizer&, Consumer& consumer) { ... }
-```
+- A **regular expression pattern**.
+- A **flag**:  
+  - `REGULAR` — default behavior (normal token).  
+  - `SKIP` — ignored tokens (e.g., whitespace or comments).  
+  - `MULTILINE` — spans across multiple lines.
 
-There's a macro for creating a parser rule, that makes it simpler, and allows to use some cool Nizer features:
+Let’s define symbols for:
 
-```cpp
-parser_rule(parseSomething) { ... }
-```
-
-These functions are the heart of a **recursive descent parser**. The "descendant" part will make more sense shortly.
-
-To parse math expressions, we’ll create three parsing functions, each representing a level of abstraction in mathematical operations.
-
-**But what is a math expression, really?**
-
-We’re not concerned with the individual numbers or symbols, but with how operations are grouped and prioritized.
-
-- The most basic element of an expression is a **factor** (e.g., a single number).
-- A collection of factors connected by `*` or `/` forms a **term**.
-- A collection of terms connected by `+` or `-` forms an **expression**.
-
-Example:  
-For the input `10 + 2 * 3 - 4`, we can break it down like this:
-
-```
-factor + factor * factor - factor
-```
-
-Then abstract it further:
-
-```
-term + term - term
-```
-
-The deeper we go, the more abstract and simplified the structure becomes—that’s the essence of a recursive descent parser.
-
-Here’s how we implement it:
+- Numbers
+- Math operators
+- Whitespace (skipped)
 
 ```cpp
-AST* parseFactor(Nizer&, Consumer& consumer) {
+SymbolList symbols;
+
+Symbol NUM = symbols("[0-9]+", REGULAR);       // Unsigned integers
+Symbol OP  = symbols("[\\+\\-\\*/]", REGULAR); // Math operators: + - * /
+Symbol WS  = symbols("[ \n\r\t]+", SKIP);      // Whitespace (ignored)
+```
+
+> [!TIP]
+> You can use the built-in whitespace symbol with:  
+> `Symbol WS = symbols(nz::sym::WS);`
+
+---
+
+## Parsing Rules
+
+A parser rule is a function that consumes tokens and builds an **AST (Abstract Syntax Tree)** node.
+
+Signature:
+
+```cpp
+AST* parseSomething(Consumer& consumer);
+```
+
+Use the `parser_rule` macro to define rules more cleanly:
+
+```cpp
+parser_rule(parseSomething) {
+  ...
+}
+```
+
+We’ll build the parser in three layers:
+
+1. `factor` — the most basic unit (a number).
+2. `term` — factors joined by `*` or `/`.
+3. `expression` — terms joined by `+` or `-`.
+
+---
+
+### `factor`: single number
+
+```cpp
+parser_rule(parseFactor) {
   Token num;
 
   if (consumer.consume({&num}, {NUM})) {
@@ -89,15 +81,16 @@ AST* parseFactor(Nizer&, Consumer& consumer) {
     return &node;
   }
 
-  throw nizer_error("Invalid token at {}", {consumer.at()});
+  throw nizer_error("Expected number at {}", {consumer.at()});
 }
 ```
 
 ---
 
+### `term`: factor [('*' | '/') factor]*
+
 ```cpp
-// term = factor [('*' | '/') factor]*
-AST* parseTerm(Nizer&, Consumer& consumer) {
+parser_rule(parseTerm) {
   AST* left = parseFactor(consumer);
 
   Token op;
@@ -118,9 +111,10 @@ AST* parseTerm(Nizer&, Consumer& consumer) {
 
 ---
 
+### `expression`: term [('+' | '-') term]*
+
 ```cpp
-// expression = term [('+' | '-') term]*
-AST* parseExpression(Nizer&, Consumer& consumer) {
+parser_rule(parseExpression) {
   AST* left = parseTerm(consumer);
 
   Token op;
@@ -139,38 +133,39 @@ AST* parseExpression(Nizer&, Consumer& consumer) {
 }
 ```
 
-> [!TIP]
-> The `parseExpression` function is our **starting rule**. It produces the root node of the AST.
+> [!IMPORTANT]
+> `parseExpression` is the **entry rule** — it produces the root of the AST.
 
 ---
 
-### Parsing an Expression
+## Putting It All Together
 
-To finalize the parser, we pass the symbol list and the starting rule (`parseExpression`) to the `Nizer` class. After that, we can parse any string containing a math expression:
+Here’s how to parse an expression string:
 
 ```cpp
-int main(int argc, char** argv) {
-  Nizer nizer(symbols, parseExpression);
+int main() {
+  std::string exp = "10 * 2 / 3 - 4";
 
-  AST* tree = nizer.parse("10 * 2 / 3 - 4");
+  token_vector tokens = nz::tokenize(symbols, exp);
+  Consumer consumer(exp, tokens);
 
-  std::cout << ast_to_string(tree) << std::endl;
+  AST* tree = parseExpression(consumer);
+  std::cout << nz::ast_to_string(tree) << std::endl;
 }
 ```
 
 **Output:**
 ```
-(op (left:op (left:factor) (right:op (left:factor) (right:factor))) (right:factor))
+(op (left:op (left:op (left:factor) (right:factor)) (right:factor)) (right:factor))
 ```
 
-Which can be visualized as:
-
+**Visual AST:**
 ```
           (-)
          /   \
-       (+)    (4)
+       (/)   (4)
       /   \
-   (10)   (*)
-         /   \
-       (2)   (3)
+    (*)   (3) 
+    / \
+ (10) (2)
 ```

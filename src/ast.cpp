@@ -3,6 +3,8 @@
 #include <sstream>
 #include <string>
 
+namespace nz {
+
 std::string AST::rule() { return std::any_cast<std::string>(entries["rule"]); }
 
 void AST::reset(std::string rule, entry_map _entries) {
@@ -132,3 +134,5 @@ std::string ast_to_string(AST *ast) {
 
   return buffer.str();
 }
+
+} // namespace nz

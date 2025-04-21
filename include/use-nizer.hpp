@@ -19,5 +19,6 @@ using nz::ParserRule;
 using nz::Symbol;
 using nz::SymbolList;
 using nz::SymFlags;
+using nz::SymMatch;
 using nz::Token;
 using nz::token_vector;

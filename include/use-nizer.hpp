@@ -7,8 +7,6 @@
 
 #include <nizer/consumer.hpp>
 #include <nizer/err.hpp>
-#include <nizer/parser.hpp>
-#include <nizer/visitor.hpp>
 
 #include <nizer/nz.hpp>
 

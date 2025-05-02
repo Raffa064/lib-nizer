@@ -6,6 +6,8 @@
 
 namespace nz {
 
+struct srcref;
+
 class Consumer;
 
 class AST {
@@ -31,13 +33,15 @@ public:
     return std::any_cast<T>(any);
   }
 
-  std::string at();
+  srcref at();
 
   void reset(std::string rule, entry_map entries = {});
 
   void destroyChildren();
 
   std::any &operator[](std::string key);
+
+  bool operator==(std::string rule);
 
   ~AST();
 

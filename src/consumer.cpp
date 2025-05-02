@@ -111,11 +111,11 @@ bool Consumer::wrap(Consumer &out, SymMatch start, SymMatch end) {
   return false;
 }
 
-std::string Consumer::at(Token token) { return nz::at(source, token.index); }
+srcref Consumer::at(Token token) { return nz::at(source, token.index); }
 
-std::string Consumer::at() {
+srcref Consumer::at() {
   if (!has())
-    return "EOF"; // reached enf of file (or end of line)
+    return nz::at(source, 0); // reached enf of file (or end of line)
 
   Token currentToken = get(0);
   return at(currentToken);

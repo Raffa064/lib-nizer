@@ -8,7 +8,7 @@ namespace nz {
 
 std::string AST::rule() { return get<std::string>("rule"); }
 
-std::string AST::at() { return nz::at(source, index); }
+srcref AST::at() { return nz::at(source, index); }
 
 void AST::reset(std::string rule, entry_map _entries) {
   if (!entries.empty())
@@ -35,6 +35,8 @@ void AST::destroyChildren() {
 AST::~AST() { destroyChildren(); }
 
 std::any &AST::operator[](std::string key) { return entries[key]; }
+
+bool AST::operator==(std::string rule) { return this->rule() == rule; }
 
 std::string quote(std::string str) { return "\"" + str + "\""; }
 

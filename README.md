@@ -53,14 +53,6 @@ Signature:
 AST* parseSomething(Consumer& consumer);
 ```
 
-Use the `parser_rule` macro to define rules more cleanly:
-
-```cpp
-parser_rule(parseSomething) {
-  ...
-}
-```
-
 We’ll build the parser in three layers:
 
 1. `factor` — the most basic unit (a number).
@@ -69,10 +61,11 @@ We’ll build the parser in three layers:
 
 ---
 
-### `factor`: single number
 
 ```cpp
-parser_rule(parseFactor) {
+
+// factor: num
+AST *parseFactor(Consumer &consumer) {
   Token num;
 
   if (consumer.consume({&num}, {NUM})) {
@@ -81,16 +74,11 @@ parser_rule(parseFactor) {
     return &node;
   }
 
-  throw nizer_error("Expected number at {}", {consumer.at()});
+  throw nz::error("Syntax Error", "Non number factor", consumer.at());
 }
-```
 
----
-
-### `term`: factor [('*' | '/') factor]*
-
-```cpp
-parser_rule(parseTerm) {
+// term: factor [('*' | '/') factor]*
+AST *parseTerm(Consumer &consumer) {
   AST* left = parseFactor(consumer);
 
   Token op;
@@ -107,14 +95,9 @@ parser_rule(parseTerm) {
 
   return left;
 }
-```
 
----
-
-### `expression`: term [('+' | '-') term]*
-
-```cpp
-parser_rule(parseExpression) {
+// expression: term [('+' | '-') term]*
+AST *parseExpression(Consumer &consumer) {
   AST* left = parseTerm(consumer);
 
   Token op;
@@ -128,6 +111,11 @@ parser_rule(parseExpression) {
 
     left = &node;
   }
+
+  if (consumer.has())
+    throw nz::error("Dangling tokens", consumer.at());
+
+
 
   return left;
 }

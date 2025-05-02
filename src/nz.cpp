@@ -3,7 +3,6 @@
 #include <nizer/consumer.hpp>
 #include <nizer/nz.hpp>
 #include <nizer/token.hpp>
-#include <nizer/visitor.hpp>
 #include <regex>
 
 namespace nz {
@@ -36,15 +35,14 @@ token_vector tokenize(SymbolList symbols, std::string &source) {
       }
     }
 
-    if (!matched) {
-      throw nz::error("Can't apply match at {}", {nz::at(source, i)});
-    }
+    if (!matched)
+      throw nz::error("Syntax Error", "Can't apply match", nz::at(source, i));
   }
 
   return tokens;
 }
 
-void line_count(std::string &input, int index, int &row, int &col) {
+void locate_line(std::string &input, int index, int &line, int &col) {
   col = input.find_last_of("\n", index);
 
   if (col == std::string::npos)
@@ -52,18 +50,25 @@ void line_count(std::string &input, int index, int &row, int &col) {
   else
     col = index - col;
 
-  row = 1;
+  line = 1;
   while (true) {
     index = input.find_last_of("\n", index - 1);
 
     if (index == std::string::npos)
       break;
 
-    row++;
+    line++;
   }
 }
 
-std::string at(std::string source, int index) {
+srcref at(std::string &source, int index) {
+  int line, col;
+  locate_line(source, index, line, col);
+
+  return {.source = source, .index = index, .line = line, .col = col};
+}
+
+srcref::operator std::string() {
   int start = source.find_last_of("\n", index);
   int end = source.find("\n", index);
 
@@ -72,13 +77,10 @@ std::string at(std::string source, int index) {
   if (end == std::string::npos)
     end = source.size();
 
-  int row, col;
-  line_count(source, index, row, col);
+  std::string lsrc = std::string(source.begin() + start, source.begin() + end);
+  lsrc.erase(std::remove(lsrc.begin(), lsrc.end(), '\n'), lsrc.end());
 
-  std::string code = std::string(source.begin() + start, source.begin() + end);
-  code.erase(std::remove(code.begin(), code.end(), '\n'), code.end());
-
-  return std::to_string(row) + ":" + std::to_string(col) + " '" + code + "'";
+  return std::to_string(line) + ":" + std::to_string(col) + " '" + lsrc + "'";
 }
 
 } // namespace nz

@@ -1,46 +1,23 @@
 #pragma once
 
-#include <any>
-#include <initializer_list>
+#include "nizer/nz.hpp"
 #include <string>
 
 namespace nz {
 
-using ils = std::initializer_list<std::any>;
-
-inline std::string any_to_string(const std::any &value) {
-  if (value.type() == typeid(int)) {
-    return std::to_string(std::any_cast<int>(value));
-  } else if (value.type() == typeid(double)) {
-    return std::to_string(std::any_cast<double>(value));
-  } else if (value.type() == typeid(std::string)) {
-    return std::any_cast<std::string>(value);
-  } else if (value.type() == typeid(const char *)) {
-    return std::string(std::any_cast<const char *>(value));
-  }
-
-  return "<unprintable-type>";
-}
-
 class error {
 public:
-  std::string msg;
+  std::string err;
+  std::string reason;
+  srcref ref;
 
-  error(std::string msg, ils insertion = {}) {
-    int index = 0;
-    for (auto ins : insertion) {
-      index = msg.find("{}", index);
+  error(std::string err, std::string reason, srcref ref)
+      : err(err), reason(reason), ref(ref) {}
 
-      std::string str = any_to_string(ins);
-      msg = msg.replace(index, 2, str);
-      index += str.length();
-    }
+  error(std::string reason, srcref ref)
+      : err("Unexpected error"), reason(reason), ref(ref) {}
 
-    this->msg = msg;
-  }
-
-  operator std::string() { return msg; }
-  operator const char *() { return msg.c_str(); }
+  operator std::string();
 };
 
 } // namespace nz

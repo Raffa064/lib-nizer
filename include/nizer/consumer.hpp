@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nizer/ast.hpp"
+#include "nizer/nz.hpp"
 #include <nizer/sym.hpp>
 #include <nizer/token.hpp>
 #include <string>
@@ -76,11 +77,11 @@ public:
    */
   bool wrap(Consumer &, SymMatch, SymMatch);
 
-  // Return a string with location of the given token in the source
-  std::string at(Token);
+  // Return the location of the given token in the source
+  srcref at(Token);
 
-  // Returns a string with the location of the current token in the source
-  std::string at();
+  // Return the location of the current token in the source
+  srcref at();
 
   // Display current tokens
   void debug();

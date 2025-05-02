@@ -11,7 +11,7 @@ Symbol NUM = symbols("[0-9]+", nz::REGULAR);      // Números inteiros
 Symbol OP = symbols("[\\+\\-\\*/]", nz::REGULAR); // Operadores + - * /
 Symbol WS = symbols(nz::sym::WS);                 // Espaços em branco ignorados
 
-parser_rule(parseFactor) {
+AST *parseFactor(Consumer &consumer) {
   Token num;
   if (consumer.consume({&num}, {NUM})) {
     AST &node =
@@ -19,11 +19,11 @@ parser_rule(parseFactor) {
     return &node;
   }
 
-  throw nz::error("Invalid token at {}", {consumer.at()});
+  throw nz::error("Syntax Error", "Invalid token", consumer.at());
 }
 
 // Multiplicação e divisão
-parser_rule(parseTerm) {
+AST *parseTerm(Consumer &consumer) {
   AST *left = parseFactor(consumer);
 
   Token op;
@@ -42,7 +42,7 @@ parser_rule(parseTerm) {
 }
 
 // Soma e subtração
-parser_rule(parseMath) {
+AST *parseMath(Consumer &consumer) {
   AST *left = parseTerm(consumer);
 
   Token op;
@@ -57,11 +57,14 @@ parser_rule(parseMath) {
     left = &node;
   }
 
+  if (consumer.has())
+    throw nz::error("Dangling tokens", consumer.at());
+
   return left;
 }
 
-int visitor(evaluator) {
-  visit("op") {
+int evaluator(AST *node) {
+  if (*node == "op") {
     int left = evaluator(node->get<AST *>("left"));
     int right = evaluator(node->get<AST *>("right"));
 
@@ -80,28 +83,34 @@ int visitor(evaluator) {
     return result;
   }
 
-  visit("factor") { return node->get<int>("value"); }
+  if (*node == "factor")
+    return node->get<int>("value");
 
-  throw nz::error("Invalid node: {}", {nz::ast_to_string(node)});
+  throw nz::error("Invalid node:" + nz::ast_to_string(node), node->at());
+}
+
+int calculateExp(std::string exp) {
+  token_vector tokens = nz::tokenize(symbols, exp);
+  Consumer consumer(exp, tokens);
+  AST *tree = parseMath(consumer);
+  int value = evaluator(tree);
+  delete tree;
+
+  return value;
 }
 
 int main() {
-  try {
-    std::string exp = "10 * 2 / 3 - 4";
+  while (true) {
+    try {
+      std::cout << ">> ";
 
-    token_vector tokens = nz::tokenize(symbols, exp);
-    Consumer consumer(exp, tokens);
-    AST *tree = parseMath(consumer);
-    int value = evaluator(tree);
+      std::string exp;
+      std::getline(std::cin, exp);
 
-    std::cout << nz::ast_to_string(tree) << std::endl;
-    std::cout << exp << " = " << value << std::endl;
-
-    delete tree;
-
-    return 0;
-  } catch (nz::error err) {
-    std::cout << "Error:" << err.msg << std::endl;
-    return 1;
+      int result = calculateExp(exp);
+      std::cout << " = " << result << std::endl;
+    } catch (nz::error err) {
+      std::cout << (std::string)err << std::endl;
+    }
   }
 }

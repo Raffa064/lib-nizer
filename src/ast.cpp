@@ -1,3 +1,4 @@
+#include "nizer/nz.hpp"
 #include <any>
 #include <nizer/ast.hpp>
 #include <sstream>
@@ -5,7 +6,9 @@
 
 namespace nz {
 
-std::string AST::rule() { return std::any_cast<std::string>(entries["rule"]); }
+std::string AST::rule() { return get<std::string>("rule"); }
+
+std::string AST::at() { return nz::at(source, index); }
 
 void AST::reset(std::string rule, entry_map _entries) {
   if (!entries.empty())

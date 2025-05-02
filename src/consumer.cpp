@@ -1,3 +1,4 @@
+#include "nizer/nz.hpp"
 #include <math.h>
 #include <nizer/consumer.hpp>
 #include <nizer/sym.hpp>
@@ -110,38 +111,7 @@ bool Consumer::wrap(Consumer &out, SymMatch start, SymMatch end) {
   return false;
 }
 
-void line_count(std::string &input, int index, int &row, int &col) {
-  col = input.find_last_of("\n", index);
-
-  if (col == std::string::npos)
-    col = 0;
-  else
-    col = index - col;
-
-  row = 1;
-  while (true) {
-    index = input.find_last_of("\n", index - 1);
-
-    if (index == std::string::npos)
-      break;
-
-    row++;
-  }
-}
-
-std::string Consumer::at(Token token) {
-  int index = token.index;
-  int start = source.find_last_of("\n", index);
-  int end = std::min<int>(source.find("\n", index), source.size());
-
-  int row, col;
-  line_count(source, index, row, col);
-
-  std::string code = std::string(source.begin() + start, source.begin() + end);
-  code.erase(std::remove(code.begin(), code.end(), '\n'), code.end());
-
-  return std::to_string(row) + ":" + std::to_string(col) + " '" + code + "'";
-}
+std::string Consumer::at(Token token) { return nz::at(source, token.index); }
 
 std::string Consumer::at() {
   if (!has())
@@ -154,6 +124,13 @@ std::string Consumer::at() {
 void Consumer::debug() {
   std::vector<Token> tks(tokens.begin() + index, tokens.end());
   print_tokens(tks);
+}
+
+AST *Consumer::make_node(std::string rule, AST::entry_map entries) {
+  int index = has() ? get(0).index : 0;
+  AST &node = *new AST(source, index, rule, entries);
+
+  return &node;
 }
 
 } // namespace nz

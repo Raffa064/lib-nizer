@@ -14,7 +14,8 @@ Symbol WS = symbols(nz::sym::WS);                 // Espaços em branco ignorado
 parser_rule(parseFactor) {
   Token num;
   if (consumer.consume({&num}, {NUM})) {
-    AST &node = *new AST("factor", {{"value", std::stoi(num.value)}});
+    AST &node =
+        *consumer.make_node("factor", {{"value", std::stoi(num.value)}});
     return &node;
   }
 
@@ -29,7 +30,7 @@ parser_rule(parseTerm) {
   while (consumer.consume({&op}, {OP("[\\*/]")})) {
     AST *right = parseFactor(consumer);
 
-    AST &node = *new AST("op");
+    AST &node = *consumer.make_node("op");
     node["op"] = op.value;
     node["left"] = left;
     node["right"] = right;
@@ -48,7 +49,7 @@ parser_rule(parseMath) {
   while (consumer.consume({&op}, {OP("[\\+\\-]")})) {
     AST *right = parseTerm(consumer);
 
-    AST &node = *new AST("op");
+    AST &node = *consumer.make_node("op");
     node["op"] = op.value;
     node["left"] = left;
     node["right"] = right;

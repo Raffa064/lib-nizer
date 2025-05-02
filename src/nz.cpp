@@ -1,3 +1,4 @@
+#include "nizer/err.hpp"
 #include <nizer/ast.hpp>
 #include <nizer/consumer.hpp>
 #include <nizer/nz.hpp>
@@ -36,13 +37,48 @@ token_vector tokenize(SymbolList symbols, std::string &source) {
     }
 
     if (!matched) {
-      throw std::runtime_error(
-          "Can't apply match at #" + std::to_string(i) + " : '" +
-          source.substr(i, std::min<int>(source.length(), 20)) + "'");
+      throw nz::error("Can't apply match at {}", {nz::at(source, i)});
     }
   }
 
   return tokens;
+}
+
+void line_count(std::string &input, int index, int &row, int &col) {
+  col = input.find_last_of("\n", index);
+
+  if (col == std::string::npos)
+    col = 0;
+  else
+    col = index - col;
+
+  row = 1;
+  while (true) {
+    index = input.find_last_of("\n", index - 1);
+
+    if (index == std::string::npos)
+      break;
+
+    row++;
+  }
+}
+
+std::string at(std::string source, int index) {
+  int start = source.find_last_of("\n", index);
+  int end = source.find("\n", index);
+
+  if (start == std::string::npos)
+    start = 0;
+  if (end == std::string::npos)
+    end = source.size();
+
+  int row, col;
+  line_count(source, index, row, col);
+
+  std::string code = std::string(source.begin() + start, source.begin() + end);
+  code.erase(std::remove(code.begin(), code.end(), '\n'), code.end());
+
+  return std::to_string(row) + ":" + std::to_string(col) + " '" + code + "'";
 }
 
 } // namespace nz

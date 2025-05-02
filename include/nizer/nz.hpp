@@ -10,4 +10,6 @@ namespace nz {
 
 token_vector tokenize(SymbolList symbols, std::string &);
 
+std::string at(std::string source, int index);
+
 }; // namespace nz

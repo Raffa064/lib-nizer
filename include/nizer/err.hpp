@@ -32,9 +32,8 @@ public:
       index = msg.find("{}", index);
 
       std::string str = any_to_string(ins);
-      int length = str.length();
-      msg = msg.replace(index, length, str);
-      index += length;
+      msg = msg.replace(index, 2, str);
+      index += str.length();
     }
 
     this->msg = msg;

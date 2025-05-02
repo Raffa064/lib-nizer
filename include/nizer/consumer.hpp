@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nizer/ast.hpp"
 #include <nizer/sym.hpp>
 #include <nizer/token.hpp>
 #include <string>
@@ -83,6 +84,9 @@ public:
 
   // Display current tokens
   void debug();
+
+  // Creates a new node, adding metadata into it
+  AST *make_node(std::string name, AST::entry_map entries = {});
 
   Consumer(std::string source, token_vector tokens)
       : source(source), tokens(tokens), index(0) {};
